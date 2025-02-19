@@ -1,0 +1,44 @@
+---
+# tasks file for Docker
+
+- name: Update apt package index
+  apt:
+    update_cache: yes
+
+- name: Install required dependencies for Docker
+  apt:
+    name: "{{ docker_apt_packages }}"
+    state: present
+
+- name: Add Docker GPG key
+  apt_key:
+    url: "{{ docker_gpg_key_url }}"
+    state: present
+
+- name: Add Docker APT repository
+  apt_repository:
+    repo: "{{ docker_repo }}"
+    state: present
+
+- name: Install Docker dependencies
+  apt:
+    name: "{{ docker_dependencies }}"
+    state: present
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name: "{{ docker_package }}"
+    state: present
+
+- name: Start Docker service
+  service:
+    name: "{{ docker_service_name }}"
+    state: started
+    enabled: yes
+
+- name: Add user to Docker group
+  user:
+    name: "{{ docker_user }}"
+    group: docker
+    append: yes

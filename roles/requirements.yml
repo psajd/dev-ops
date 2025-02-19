@@ -1,0 +1,6 @@
+---
+roles:
+  - name: Docker
+    src: https://github.com/psajd/dev-ops
+    scm: git
+    version: lab2
