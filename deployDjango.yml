@@ -1,0 +1,49 @@
+---
+- name: Deploy Django application using Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Pull the Docker image
+      docker_image:
+        name: timurbabs/django
+        tag: latest
+        source: pull
+
+    - name: Run the Docker container
+      docker_container:
+        name: django_app
+        image: timurbabs/django:latest
+        state: started
+        ports:
+          - "8000:8000"
+        restart_policy: always
+      register: container_status
+      
+    - name: Debug container status
+      debug:
+        var: container_status
+
+    - name: Verify application is accessible
+      shell: curl -s http://localhost:8000
+      register: curl_result
+      retries: 5
+      delay: 10
+      until: curl_result.rc == 0
+      ignore_errors: true
+
+    - name: Check container logs if the curl fails
+      shell: docker logs django_app
+      register: container_logs
+      when: curl_result is failed
+      ignore_errors: true
+
+    - name: Debug logs if container failed
+      debug:
+        var: container_logs
+      when: container_logs is defined

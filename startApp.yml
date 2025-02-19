@@ -1,0 +1,47 @@
+---
+- name: Запуск Django приложения в Docker
+  hosts: app
+  become: yes
+  tasks:
+
+    # Установка зависимостей для Django приложения
+    - name: Установить зависимости из requirements.txt
+      pip:
+        name: "{{ item }}"
+        state: present
+        executable: pip3
+      loop:
+        - django
+        - gunicorn
+        - psycopg2
+        - djangorestframework
+        - markdown
+        - Pillow
+      become: yes
+      become_user: vagrant
+      chdir: /home/vagrant/django-locallibrary-tutorial
+
+    # Построение Docker образа (если Dockerfile уже существует)
+    - name: Создать
+          docker_image:
+        build:
+          path: /home/vagrant/django-locallibrary-tutorial
+        name: timurbabs/django-app
+        tag: latest
+      become: yes
+
+    # Запуск Docker контейнера с Django приложением
+    - name: Запустить Docker контейнер с Django приложением
+      docker_container:
+        name: django-app
+        image: timurbabs/django-app:latest
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8000:8000"
+        volumes:
+          - /home/vagrant/django-locallibrary-tutorial:/app
+        env:
+          - DEBUG=True
+        command: python3 /app/manage.py runserver 0.0.0.0:8000
+      become: yes

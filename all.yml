@@ -1,0 +1,39 @@
+---
+- name: Fix Docker repository conflict and install Docker
+  hosts: all
+  become: yes
+  tasks:
+    # Удалить старые записи репозитория Docker
+    - name: Remove old Docker repository file
+      file:
+        path: "/etc/apt/sources.list.d/docker.list"
+        state: absent
+
+    # Удалить старые ключи Docker
+    - name: Remove old Docker GPG keys
+      command: rm -f /usr/share/keyrings/docker-archive-keyring.gpg
+      become: yes
+
+    # Очистка кэша пакетов
+    - name: Clean apt cache
+      apt:
+        autoclean: yes
+        autoremove: yes
+
+    # Добавить официальное GPG-ключ для Docker
+    - name: Add Docker GPG key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-arch>      become: yes
+            become: yes
+      when: ansible_distribution == "Ubuntu"
+
+    # Добавление репозитория Docker
+    - name: Add Docker repository
+      shell: echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.co>      become: yes
+      when: ansible_distribution == "Ubuntu"
+
+
+    # Установка Docker
+    - name: Install Docker from official repository
+      apt:
+        name: docker-ce
+        state: present
