@@ -1,0 +1,13 @@
+---
+# tasks file for postgresql
+- name: Include installation tasks
+  include_tasks: install.yml
+
+- name: Include configuration tasks
+  include_tasks: configure.yml
+
+- name: Include database creation tasks
+  include_tasks: databases.yml
+
+- name: Include replication tasks
+  include_tasks: replication.yml

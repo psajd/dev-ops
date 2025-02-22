@@ -1,0 +1,31 @@
+---
+# defaults file for postgresql
+postgres_version: "14"
+postgres_data_dir: "/var/lib/postgresql/{{ postgres_version }}/main"
+postgres_listen_addresses: "0.0.0.0"
+postgres_port: 5432
+postgres_superuser: "postgres"
+postgres_superuser_password: "postgres"
+
+postgres_databases: []
+# Example:
+# postgres_databases:
+#   - name: example_db
+#     owner: example_user
+
+postgres_users: []
+# Example:
+# postgres_users:
+#   - name: example_user
+#     password: example_password
+#     privileges: "ALL"
+
+postgres_replication:
+  enabled: true
+  replication_user: "replicator"
+  replication_password: "replicator_password"
+  wal_level: "replica"
+
+postgres_nodes:
+  master: ""
+  replicas: []

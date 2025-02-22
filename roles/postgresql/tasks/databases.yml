@@ -1,0 +1,17 @@
+- name: Create PostgreSQL users
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+  become: true
+  become_user: postgres
+  loop: "{{ postgres_users }}"
+  when: postgres_users | length > 0
+
+- name: Create PostgreSQL databases
+  postgresql_db:
+    name: "{{ item.name }}"
+    owner: "{{ item.owner }}"
+  become: true
+  become_user: postgres
+  loop: "{{ postgres_databases }}"
+  when: postgres_databases | length > 0

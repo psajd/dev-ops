@@ -1,0 +1,18 @@
+port {{ openvpn_port }}
+proto {{ openvpn_proto }}
+dev tun
+
+server {{ openvpn_network }}
+
+push "route {{ openvpn_push_route }}"
+
+client-to-client
+keepalive 10 120
+cipher AES-256-CBC
+auth SHA256
+dh /etc/openvpn/easy-rsa/pki/dh.pem
+tls-auth /etc/openvpn/easy-rsa/pki/ta.key 0
+
+ca /etc/openvpn/easy-rsa/pki/ca.crt
+cert /etc/openvpn/easy-rsa/pki/issued/server.crt
+key /etc/openvpn/easy-rsa/pki/private/server.key

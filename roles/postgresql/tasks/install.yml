@@ -1,0 +1,16 @@
+- name: Install PostgreSQL
+  apt:
+    name: "postgresql"
+    state: present
+    update_cache: yes
+
+- name: Install additional packages
+  apt:
+    name:
+      - python3-pip
+      - acl
+    state: present
+
+- name: Install psycopg2
+  pip:
+    name: "psycopg2-binary"
