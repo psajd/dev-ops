@@ -1,0 +1,19 @@
+---
+roles:
+  - name: Docker
+    src: https://github.com/psajd/dev-ops
+    scm: git
+    version: lab2
+    path: roles/Docker
+
+  - name: nginx
+    src: https://github.com/psajd/dev-ops
+    scm: git
+    version: lab3
+    path: roles/nginx
+
+  - name: ovpn
+    src: https://github.com/psajd/dev-ops
+    scm: git
+    version: lab4
+    path: roles/ovpn

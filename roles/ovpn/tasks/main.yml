@@ -1,0 +1,118 @@
+---
+# tasks file for openvpn
+
+- name: Install OpenVPN and Easy-RSA
+  apt:
+    name:
+      - openvpn
+      - easy-rsa
+    state: present
+    update_cache: yes
+
+- name: Set up Easy-RSA
+  command:
+    cmd: "make-cadir {{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa"
+
+- name: Initialize the PKI
+  command:
+    cmd: "{{ openvpn_path }}/easy-rsa/easyrsa init-pki"
+    chdir: "{{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa/pki"
+  become: yes
+
+- name: Build the CA (Certificate Authority)
+  command:
+    cmd: "{{ openvpn_path }}/easy-rsa/easyrsa build-ca nopass"
+    chdir: "{{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa/pki/ca.crt"
+  become: yes
+  environment:
+    EASYRSA_BATCH: "yes"
+
+- name: Build server certificate and key
+  command:
+    cmd: "{{ openvpn_path }}/easy-rsa/easyrsa build-server-full server nopass"
+    chdir: "{{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa/pki/issued/server.crt"
+  become: yes
+
+- name: Build client certificate and key
+  command:
+    cmd: "{{ openvpn_path }}/easy-rsa/easyrsa build-client-full {{ openvpn_client_name }} nopass"
+    chdir: "{{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa/pki/issued/{{ openvpn_client_name }}.crt"
+  become: yes
+
+- name: Generate Diffie-Hellman parameters
+  command:
+    cmd: "{{ openvpn_path }}/easy-rsa/easyrsa gen-dh"
+    chdir: "{{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa/pki/dh.pem"
+  become: yes
+
+- name: Generate TLS auth key
+  command:
+    cmd: "openvpn --genkey --secret {{ openvpn_path }}/easy-rsa/pki/ta.key"
+    chdir: "{{ openvpn_path }}/easy-rsa"
+  args:
+    creates: "{{ openvpn_path }}/easy-rsa/pki/ta.key"
+  become: yes
+
+- name: Copy OpenVPN server config
+  template:
+    src: "server.conf.j2"
+    dest: "{{ openvpn_path }}/server.conf"
+  notify:
+    - Restart OpenVPN
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: yes
+
+- name: Start OpenVPN service
+  service:
+    name: openvpn@server
+    state: started
+    enabled: yes
+
+- name: Register ca.crt
+  slurp:
+    src: "{{ openvpn_path }}/easy-rsa/pki/ca.crt"
+  register: ca_cert
+
+- name: Register ta.key
+  slurp:
+    src: "{{ openvpn_path }}/easy-rsa/pki/ta.key"
+  register: ta_key
+
+- name: Register client_cert
+  slurp:
+    src: "{{ openvpn_path }}/easy-rsa/pki/issued/client1.crt"
+  register: client_cert
+
+- name: Register client_key
+  slurp:
+    src: "{{ openvpn_path }}/easy-rsa/pki/private/client1.key"
+  register: client_key
+
+- name: Create client configuration file
+  template:
+    src: client.ovpn.j2
+    dest: "{{ openvpn_path }}/client.ovpn"
+  become: true
+
+- name: Copy client configuation file to local machine
+  fetch:
+    src: "{{ openvpn_path }}/client.ovpn"
+    dest: "{{ playbook_dir }}/openvpn_conf/{{ openvpn_client_name }}.ovpn"
+    flat: true
