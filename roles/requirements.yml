@@ -1,0 +1,11 @@
+---
+roles:
+  - name: Docker
+    src: https://github.com/psajd/dev-ops.git
+    scm: git
+    version: lab2
+
+  - name: nginx
+    src: https://github.com/psajd/dev-ops.git
+    scm: git
+    version: lab3

@@ -1,0 +1,10 @@
+---
+# defaults file for nginx
+nginx_package_name: nginx
+nginx_service_name: nginx
+nginx_config_file: /etc/nginx/sites-available/default
+nginx_server_name: localhost
+nginx_root: /var/www/html
+
+app_static_path: /opt/django-locallibrary/staticfiles/
+app_url: http://localhost:8000

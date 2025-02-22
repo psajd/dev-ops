@@ -1,0 +1,24 @@
+---
+# tasks file for nginx
+
+- name: Ensure APT cache is updated
+  apt:
+    update_cache: yes
+
+- name: Install Nginx
+  apt:
+    name: "{{ nginx_package_name }}"
+    state: present
+
+- name: Configure Nginx
+  template:
+    src: default.j2
+    dest: "{{ nginx_config_file }}"
+    validate: "nginx -t -c %s"
+  notify: Restart Nginx
+
+- name: Ensure Nginx is started and enabled
+  service:
+    name: "{{ nginx_service_name }}"
+    state: started
+    enabled: yes

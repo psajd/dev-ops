@@ -1,0 +1,12 @@
+---
+- name: Install and configure Nginx on web servers
+  hosts: web
+  become: yes
+  roles:
+    - nginx
+
+- name: Install and configure Docker on app servers
+  hosts: app
+  become: yes
+  roles:
+    - Docker
